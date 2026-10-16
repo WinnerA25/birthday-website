@@ -330,7 +330,7 @@ class SoundEngine {
     if (!this.isPlayingBgm) return;
 
     const noteObj = this.melody[this.currentNoteIndex];
-    this.playMusicBoxNote(noteObj.note, noteObj.dur, 0.12);
+    this.playMusicBoxNote(noteObj.note, noteObj.dur, 0.2);
 
     // Calculate approx time in seconds for lyrics tracking
     if (onLyricProgress) {

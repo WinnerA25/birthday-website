@@ -56,6 +56,38 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     setFormData((prev) => ({ ...prev, lyrics: newLyrics }));
   };
 
+  const handleSongAudioChange = (songId: string, audioUrl: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      playlist: (prev.playlist || DEFAULT_BIRTHDAY_DATA.playlist || []).map((song) =>
+        song.id === songId ? { ...song, audioUrl } : song
+      ),
+    }));
+  };
+
+  const handleSongLyricChange = (
+    songId: string,
+    lyricIndex: number,
+    field: 'text' | 'timeSec',
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      playlist: (prev.playlist || DEFAULT_BIRTHDAY_DATA.playlist || []).map((song) =>
+        song.id === songId
+          ? {
+              ...song,
+              lyrics: song.lyrics.map((lyric, index) =>
+                index === lyricIndex
+                  ? { ...lyric, [field]: field === 'timeSec' ? Number(value) : value }
+                  : lyric
+              ),
+            }
+          : song
+      ),
+    }));
+  };
+
   const handleLoginPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -320,6 +352,52 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
 
           {activeTab === 'lyrics' && (
             <div className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs font-bold text-[#5B3A62]">Âm thanh và lời theo từng bài</p>
+                  <p className="text-[11px] text-[#7A5A82] mt-1">
+                    Đặt file MP3 trong public/audio, nhập đường dẫn /audio/ten-file.mp3, rồi chỉnh thời điểm bắt đầu từng câu.
+                  </p>
+                </div>
+                {(formData.playlist || DEFAULT_BIRTHDAY_DATA.playlist || []).map((song) => (
+                  <details key={song.id} className="rounded-xl border border-[#E4D5EC] bg-white p-3">
+                    <summary className="cursor-pointer text-xs font-semibold text-purple-900">
+                      {song.title}
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      <input
+                        type="text"
+                        value={song.audioUrl || ''}
+                        onChange={(e) => handleSongAudioChange(song.id, e.target.value)}
+                        className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E4D5EC] rounded-lg text-[#2E1537] text-xs focus:border-purple-500 focus:outline-none"
+                        placeholder="/audio/ten-bai-hat.mp3"
+                        aria-label={`Đường dẫn âm thanh ${song.title}`}
+                      />
+                      {song.lyrics.map((lyric, index) => (
+                        <div key={lyric.id} className="grid grid-cols-[5rem_1fr] gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            value={lyric.timeSec}
+                            onChange={(e) => handleSongLyricChange(song.id, index, 'timeSec', e.target.value)}
+                            className="w-full px-2 py-1.5 bg-[#FAF7F2] border border-[#E4D5EC] rounded-lg text-[#2E1537] text-xs focus:border-purple-500 focus:outline-none"
+                            aria-label={`Thời điểm câu ${index + 1} giây`}
+                          />
+                          <input
+                            type="text"
+                            value={lyric.text}
+                            onChange={(e) => handleSongLyricChange(song.id, index, 'text', e.target.value)}
+                            className="w-full px-2 py-1.5 bg-[#FAF7F2] border border-[#E4D5EC] rounded-lg text-[#2E1537] text-xs focus:border-purple-500 focus:outline-none"
+                            aria-label={`Lời câu ${index + 1}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ))}
+              </div>
+
               {/* Quick load presets from user's requested song list */}
               <div className="p-3 bg-purple-50/70 border border-purple-200 rounded-2xl">
                 <p className="text-xs font-bold text-purple-900 mb-2 flex items-center gap-1.5">

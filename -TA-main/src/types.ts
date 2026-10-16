@@ -28,6 +28,7 @@ export interface SongItem {
   id: string;
   title: string;
   artist: string;
+  audioUrl?: string;
   tag?: string;
   themeNote?: string;
   lyrics: LyricLine[];

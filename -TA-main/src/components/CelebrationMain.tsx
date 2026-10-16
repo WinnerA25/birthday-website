@@ -323,6 +323,8 @@ export const CelebrationMain: React.FC<CelebrationMainProps> = ({
                 playlist={config.playlist && config.playlist.length > 0 ? config.playlist : DEFAULT_BIRTHDAY_DATA.playlist!}
                 selectedSongId={config.selectedSongId}
                 onSongChange={onSongChange}
+                isMuted={isMuted}
+                onToggleMute={handleToggleMute}
               />
 
               {/* Navigation Bar */}

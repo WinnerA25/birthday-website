@@ -21,7 +21,9 @@ export default function App() {
         return {
           ...DEFAULT_BIRTHDAY_DATA,
           ...parsed,
-          playlist: DEFAULT_BIRTHDAY_DATA.playlist,
+          playlist: Array.isArray(parsed.playlist)
+            ? parsed.playlist
+            : DEFAULT_BIRTHDAY_DATA.playlist,
         };
       }
     } catch {

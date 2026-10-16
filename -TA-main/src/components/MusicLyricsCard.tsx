@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import {
   Music,
@@ -19,12 +19,16 @@ interface MusicLyricsCardProps {
   playlist: SongItem[];
   selectedSongId?: string;
   onSongChange?: (song: SongItem) => void;
+  isMuted: boolean;
+  onToggleMute: () => void;
 }
 
 export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
   playlist,
   selectedSongId,
   onSongChange,
+  isMuted,
+  onToggleMute,
 }) => {
   // Find current song or fallback to first
   const currentSongIndex = Math.max(
@@ -36,8 +40,8 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
   );
 
   const [isPlaying, setIsPlaying] = useState(soundEngine.isBgmActive());
-  const [isMuted, setIsMuted] = useState(soundEngine.getMuted());
   const [activeLyricIndex, setActiveLyricIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Sync state if selectedSongId changes externally
   useEffect(() => {
@@ -54,7 +58,7 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
   // Sync lyrics progression with background music
   useEffect(() => {
     let interval: number | null = null;
-    if (isPlaying && !isMuted) {
+    if (isPlaying && !isMuted && !activeSong.audioUrl) {
       interval = window.setInterval(() => {
         setActiveLyricIndex((prev) => (prev + 1) % (activeSong.lyrics.length || 1));
       }, 4800);
@@ -64,17 +68,44 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
     };
   }, [isPlaying, isMuted, activeSong]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (!activeSong.audioUrl) {
+      audio.pause();
+      audio.currentTime = 0;
+      return;
+    }
+    if (isMuted || !isPlaying) {
+      audio.pause();
+      return;
+    }
+    audio.play().catch(() => setIsPlaying(false));
+  }, [activeSong.audioUrl, isMuted, isPlaying]);
+
+  useEffect(() => {
+    if (isMuted) {
+      setIsPlaying(false);
+    }
+  }, [isMuted]);
+
   const handleSelectSong = (song: SongItem) => {
     setActiveSong(song);
     setActiveLyricIndex(0);
-    soundEngine.setActiveSongId(song.id, (sec) => {
-      syncLyricBySec(sec, song.lyrics);
-    });
-    if (!isPlaying) {
+    if (song.audioUrl) {
+      soundEngine.stopBgm();
+      setIsPlaying(!isMuted);
+    } else if (!isMuted) {
+      soundEngine.setActiveSongId(song.id, (sec) => {
+        syncLyricBySec(sec, song.lyrics);
+      });
       soundEngine.startBgm((sec) => {
         syncLyricBySec(sec, song.lyrics);
       });
       setIsPlaying(true);
+    } else {
+      soundEngine.stopBgm();
+      setIsPlaying(false);
     }
     if (onSongChange) {
       onSongChange(song);
@@ -92,13 +123,17 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
   };
 
   const handleTogglePlay = () => {
+    if (activeSong.audioUrl) {
+      if (isMuted) onToggleMute();
+      setIsPlaying(!isPlaying);
+      return;
+    }
     if (isPlaying) {
       soundEngine.stopBgm();
       setIsPlaying(false);
     } else {
       if (isMuted) {
-        soundEngine.setMuted(false);
-        setIsMuted(false);
+        onToggleMute();
       }
       soundEngine.setActiveSongId(activeSong.id);
       soundEngine.startBgm((sec) => {
@@ -118,15 +153,6 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
     const currentIndex = playlist.findIndex((s) => s.id === activeSong.id);
     const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
     handleSelectSong(playlist[prevIndex]);
-  };
-
-  const handleToggleMute = () => {
-    const nextMute = !isMuted;
-    setIsMuted(nextMute);
-    soundEngine.setMuted(nextMute);
-    if (nextMute && isPlaying) {
-      setIsPlaying(false);
-    }
   };
 
   return (
@@ -211,6 +237,14 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
 
       {/* ================= NOW PLAYING & KARAOKE CARD ================= */}
       <div className="w-full rounded-3xl bg-[#FAF7F2]/95 border border-purple-200/90 p-5 sm:p-7 backdrop-blur-xl shadow-xl shadow-purple-950/10 relative overflow-hidden">
+        <audio
+          ref={audioRef}
+          src={activeSong.audioUrl || undefined}
+          onTimeUpdate={(event) => syncLyricBySec(event.currentTarget.currentTime, activeSong.lyrics)}
+          onEnded={() => setIsPlaying(false)}
+          onError={() => setIsPlaying(false)}
+          preload="metadata"
+        />
         {/* Decorative background glows */}
         <div className="absolute top-0 right-0 w-56 h-56 bg-purple-300/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-56 h-56 bg-[#EED8C0]/30 rounded-full blur-3xl pointer-events-none" />
@@ -308,7 +342,7 @@ export const MusicLyricsCard: React.FC<MusicLyricsCardProps> = ({
             {/* Mute/Unmute */}
             <button
               type="button"
-              onClick={handleToggleMute}
+              onClick={onToggleMute}
               className="p-2 rounded-xl bg-white border border-[#E8DCF0] text-purple-900 hover:text-purple-950 hover:bg-purple-50 transition-colors cursor-pointer shadow-sm"
               title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
             >
