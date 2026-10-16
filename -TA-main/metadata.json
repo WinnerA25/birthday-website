@@ -1,0 +1,6 @@
+{
+  "name": "Chúc Mừng Sinh Nhật - Romantic Birthday Celebration",
+  "description": "Website chúc mừng sinh nhật lãng mạn với đăng nhập ngày sinh, câu hỏi dẫn dắt bất ngờ, album ảnh kỷ niệm, lời chúc, pháo hoa rực rỡ và âm nhạc.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

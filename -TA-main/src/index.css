@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+.font-romantic {
+  font-family: 'Dancing Script', cursive;
+}
+
+.font-cursive {
+  font-family: 'Great Vibes', cursive;
+}
+
+.font-serif-elegant {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Custom animations for romantic floating and glowing */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.5));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 28px rgba(216, 180, 254, 0.8)) drop-shadow(0 0 12px rgba(217, 180, 130, 0.6));
+  }
+}
+
+@keyframes flameFlicker {
+  0%, 100% {
+    transform: scale(1) rotate(-1deg);
+    filter: drop-shadow(0 -4px 8px rgba(251, 191, 36, 0.9));
+  }
+  25% {
+    transform: scale(1.1, 0.95) rotate(2deg);
+    filter: drop-shadow(0 -6px 12px rgba(249, 115, 22, 0.95));
+  }
+  50% {
+    transform: scale(0.95, 1.1) rotate(-2deg);
+    filter: drop-shadow(0 -5px 10px rgba(245, 158, 11, 0.9));
+  }
+  75% {
+    transform: scale(1.05, 1.02) rotate(1deg);
+    filter: drop-shadow(0 -7px 14px rgba(239, 68, 68, 0.8));
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+.flame {
+  animation: flameFlicker 1.2s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+
+/* Custom scrollbar for gallery and message letter */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(245, 240, 235, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.45);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.75);
+}
